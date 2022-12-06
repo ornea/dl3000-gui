@@ -1,9 +1,7 @@
 # dl3000-gui
-Rigol DL3000 GUI. This is a simple graphing GUI based on my DP83X
-My python skills are very poor and have basically cut my teeth on this project, so keep that in mind when you discover the many mistakes or bad programming practices I have folllowed.
-
-dl3000-gui
 =========
+
+My python skills are very poor 
 
 Rigol DL3000 GUI. This is a simple graphing GUI based on my DP83X which is based on Colin O'Flynn's and kudl4t4's github repository for the Rigol DP83X (DP831,DP832) connected via VISA (tested over USB by colinoflynn, tested over TCPIP although other IO connections should work).
 
