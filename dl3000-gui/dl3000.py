@@ -39,29 +39,60 @@ class DL3000(object):
         self.inst.write("SOUR:FUNC CURR")
        
 
-    def setRegulationModeBatt(self):
+    def setSourceFuncMode(self,mode="BATT"):
         """The input regulation mode setting is controlled by the FUNCtion command, the list value, the waveform display command, or the battery discharge command
             :[SOURce]:FUNCtion:MODE {FIXed|LIST|WAVe|BATTery}
             BATTery: indicates that the input regulation mode is determined by the battery discharge command"""
         print("Setting to Current Mode")
-        self.inst.write("SOUR:FUNC:MODE BATT")
+        self.inst.write("SOUR:FUNC:MODE %s"%mode)
 
 
-    def setRegulationModeBatt(self):
+    def setSourceFuncBatt(self):
         """The input regulation mode setting is controlled by the FUNCtion command, the list value, the waveform display command, or the battery discharge command
         :[SOURce]:FUNCtion:MODE {FIXed|LIST|WAVe|BATTery}
         BATTery: indicates that the input regulation mode is determined by the battery discharge command"""
         print("Setting to Current Mode")
         self.inst.write("SOUR:FUNC:MODE BATT")
 
+    def setSourceFunc(self,func="CURR"):
+        """:[SOURce]:FUNCtion {CURRent|RESistance|VOLTage|POWer}
+        Sets the static operation mode of the electronic load.
+        Queries the static operation mode of the electronic load."""
+        self.inst.write("SOUR:FUNC %s"%func)
+
+    #Current Settings
+
     def setCurrImmediate(self, Current="0"):
         """Sets the load's regulated current in CC mode  :[SOURce]:CURRent[:LEVel][:IMMediate] {<value>|MINimum|MAXimum|DEFault}"""
         print("Setting Current Level: %s"%Current)
         self.inst.write(":SOUR:CURR:LEV:IMM %s"%Current)
-    
+
+    def setCurrRangeLow(self):
+        #print("Setting Range Low")
+        self.inst.write("SOUR:CURR:RANGE 3")
+        
+    def setCurrRangeHigh(self):
+        print("Setting Range hIGH")
+        self.inst.write("SOUR:CURR:RANGE 5")
+
+    #Resistance settings
+    def setResistanceLevelImmediate(self,ohms="1000"):
+        self.inst.write(":SOUR:RES:LEV:IMM %s"%ohms)
+        
+    #Voltage settings
+    def setVoltageLevelImmediate(self,volts="10"): #set a voltage that the load tries to maintain adjustin its load resistance accordingly
+        self.inst.write(":SOUR:VOLT:LEV:IMM %s"%volts)
+        
+
+    #Power settings
+    def setPowerLevelImmediate(self,power="0.010"):
+        self.inst.write(":SOUR:POW:LEV:IMM %s"%power)
+
 
     def setState(self,state="OFF"):
         self.inst.write("SOUR:INP:STAT %s"%state)
+        
+
 
 
     def temperature(self):
@@ -110,7 +141,11 @@ if __name__ == '__main__':
     test = DL3000()
     
     test.conn(CONNECTSTRING)#"TCPIP0::192.168.1.60::INSTR")#"USB0::0x1AB1::0x0E11::DPXXXXXXXXXXX::INSTR")
-    
+    test.reset()
+    #test.setRegulationMode("FIX")
+    test.setSourceFunction()
+    test.setCurrRangeLow()
+    #test.setCurrRangeHigh()
     print (test.identify())
     print (test.temperature())
     #print (test.getVolts() )
@@ -118,5 +153,11 @@ if __name__ == '__main__':
     #print (test.getWatts() )
     #print (test.getPower() )
     print (test.getCapacity() )
+    test.setRegulationModeBatt()
+    sleep(4)
+    test.setCurrRangeLow()
+    test.setCurrRangeLow()
+    test.setCurrRangeLow()
+#    test.setRegulationModeBatt()
     #print (test.getDischargeTime() )
     

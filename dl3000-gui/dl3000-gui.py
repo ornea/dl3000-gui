@@ -13,8 +13,6 @@
 #"TCPIP0::192.168.1.60::INSTR"  <- If using TCPIP then point browser to your IP address and it will reveal the "VISA TCP/IP String"
 #"USB0::0x1AB1::0x0E11::DPXXXXXXXXXXX::INSTR"
 # ToDo
-# 1. Use the fetched model number to set the channel limits - DONE
-# 2. start plot at Zero - two? samples so it clears the buffer and does a better job of auto ranging - DONE
 
 CONNECTSTRING = "TCPIP0::172.16.0.135::INSTR"
 
@@ -26,7 +24,6 @@ import math
 import matplotlib.pyplot as plt
 
 import numpy as np
-
 
 from PySide6.QtCore import *
 from PySide6.QtGui import *
@@ -198,12 +195,15 @@ class DL3000GUI(QMainWindow):
 
         layout.addLayout(self.layoutcon)
 
-        
+        self.layoutcon2 = QHBoxLayout()
+        #self.layoutcon2.addWidget(QLabel("Connect String:"))
+        layout.addLayout(self.layoutcon2)
+
+
         self.graphlist = []
         self.graphsettings = []
-        self.chLineEdits =[]
+        self.chLineEdits = []
         self.chConfig = []
-        self.cbList = []
         
         self.vdata = [[],[],[]]
         self.idata = [[],[],[]]
@@ -235,12 +235,12 @@ class DL3000GUI(QMainWindow):
         self.lblPoint.setObjectName("lblPoint")
         self.gridLayoutChannel.addWidget(self.lblPoint, 0, 2, 1, 1)
 
-        self.graphsettings.append({"channel":"CH%d"%(graphnum+1), "points":2048})
+        self.graphsettings.append({"channel":"CH%d"%(graphnum+1), "points":4096})
 
-        self.vdata.append([-1])#*self.graphsettings[-1]["points"])
-        self.idata.append([-1])#*self.graphsettings[-1]["points"])
-        self.pdata.append([-1])#*self.graphsettings[-1]["points"])
-        self.edata.append([-1])#*self.graphsettings[-1]["points"])
+        self.vdata.append([-1])
+        self.idata.append([-1])
+        self.pdata.append([-1])
+        self.edata.append([-1])
 
         self.sbPoints = QSpinBox()
         self.sbPoints.setMinimum(10)
@@ -289,13 +289,11 @@ class DL3000GUI(QMainWindow):
         self.gridLayoutChannel.addWidget(self.pbPause, 2, 0, 1, 1)
         self.graphsettings[-1]["pauseenabled"] = self.pbPause
         
-        
         self.pbClearPlot = QPushButton()
         self.pbClearPlot.setObjectName("pbClearPlot")        
         self.pbClearPlot.clicked.connect(lambda : self.clearPlot(graphnum))
         self.gridLayoutChannel.addWidget(self.pbClearPlot, 2, 1, 1, 1)
         
-            
         if(graphnum == 0):
             self.lblState = QLabel()
             self.lblState.setObjectName("lblState")
@@ -315,9 +313,7 @@ class DL3000GUI(QMainWindow):
             self.sbVolts.setMaximum(40)
             self.sbVolts.setSingleStep(0.01)
             self.sbVolts.setObjectName("sbVolts")
-            #self.sbVolts.setValue(self.inst.getVolts()) ###("CH%d"% (graphnum+1)))
             self.sbVolts.setValue(float(eval(self.cbBattery.currentText())["VoltsCut"])) ###("CH%d"% (graphnum+1)))
-            #self.sbVolts.valueChanged.connect(lambda x: self.setVolts(graphnum, x))
 
             self.sbCurrent = QDoubleSpinBox()
             self.sbCurrent.setAccelerated(True)
@@ -327,8 +323,8 @@ class DL3000GUI(QMainWindow):
             self.sbCurrent.setSingleStep(0.01)
             self.sbCurrent.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
             self.sbCurrent.setObjectName("sbCurrent")
-            #self.sbCurrent.setValue(self.inst.getCurrImmediate())#self.inst.getCurr()) ###"CH%d"% (graphnum+1)))
-            self.sbCurrent.setValue(float(eval(self.cbBattery.currentText())["CurrLoad"]))
+            self.sbCurrent.setValue(self.inst.getCurrImmediate())#self.inst.getCurr()) ###"CH%d"% (graphnum+1)))
+            #self.sbCurrent.setValue(float(eval(self.cbBattery.currentText())["CurrLoad"]))
             #self.sbCurrent.valueChanged.connect(lambda x: self.setCurr(graphnum, x))
 
             self.lblVoltage = QLabel()
@@ -475,8 +471,7 @@ class DL3000GUI(QMainWindow):
         else:
             self.readtimer.start()
 
-    def dis(self):
-        #print (self.cbChannel.currentText())
+    def dis(self): #disconnect
         self.readtimer.stop()
         self.inst.dis()
 
@@ -488,12 +483,31 @@ class DL3000GUI(QMainWindow):
         self.inst.conn(constr)
         self.leModel.setText(self.inst.identify()["model"])
         
+        self.inst.reset()
+        
         self.cbBattery = QComboBox()
         self.cbBattery.setObjectName("cbBattery")
         self.cbBattery.addItem('{"Type":"12v 7Ah Pb","VoltsCut":11.8,"CurrLoad":3.5}')
-        self.cbBattery.addItem('{"Type":"7.4v 1.7Ah 12.6Wh Li-Ion","VoltsCut":7,"CurrLoad":0.850}')
+        self.cbBattery.addItem('{"Type":"Motorola 7.4v 1.7Ah 12.6Wh Li-Ion","VoltsCut":7,"CurrLoad":0.850}')
         self.cbBattery.addItem('{"Type":"12v 24Ah Pb","VoltsCut":11.8,"CurrLoad":12}')
         self.cbBattery.activated.connect(lambda x: self.setBattery(x))
+
+        self.cbSourceFunction = QComboBox()
+        self.cbSourceFunction.setObjectName("cbSourceFunction")
+        self.cbSourceFunction.addItem("CURRENT")
+        self.cbSourceFunction.addItem("RESISTANCE")
+        self.cbSourceFunction.addItem("VOLTAGE")
+        self.cbSourceFunction.addItem("POWER")
+        self.cbSourceFunction.activated.connect(lambda x: self.setSourceFunction(x))
+
+        self.cbSourceFunctionMode = QComboBox()
+        self.cbSourceFunctionMode.setObjectName("cbSourceFunctionMode")
+        self.cbSourceFunctionMode.addItem("BATTERY")
+        self.cbSourceFunctionMode.addItem("FIXED")
+        self.cbSourceFunctionMode.addItem("LIST")
+        self.cbSourceFunctionMode.addItem("WAVE")
+        self.cbSourceFunctionMode.activated.connect(lambda x: self.setSourceFunctionMode(x))
+
         
         self.layoutcon.addWidget(self.loggingPushButton)
         self.layoutcon.addWidget(self.sbReadingsInterval)
@@ -502,15 +516,32 @@ class DL3000GUI(QMainWindow):
         self.layoutcon.addWidget(self.leTemp)
         self.layoutcon.addWidget(QLabel("Model:"))
         self.layoutcon.addWidget(self.leModel)
-        self.layoutcon.addWidget(QLabel("Battery:"))
-        self.layoutcon.addWidget(self.cbBattery)
+        
+        self.layoutcon2.addWidget(QLabel("Battery:"))
+        self.layoutcon2.addWidget(self.cbBattery)
+
+        self.layoutcon2.addWidget(QLabel("Battery Ref:"))
+        self.leBattRef = QLineEdit("---")
+        self.layoutcon2.addWidget(self.leBattRef)
+
+        self.layoutcon2.addWidget(QLabel("Source Function:"))
+        self.layoutcon2.addWidget(self.cbSourceFunction)
+
+        self.layoutcon2.addWidget(QLabel("Source Function Mode:"))
+        self.layoutcon2.addWidget(self.cbSourceFunctionMode)
+        
+        
+        
+        #self.inst.setCurrRangeLow()
+ 
+ 
  
         if self.drawDone == False:
             #self.addGraphs(self.cbNumDisplays.value()) # <- it can not be done this way.  It results in all functions refering to CH3 only
             for i in range (0,self.cbNumDisplays.value()):
                 self.addGraphs(i)
             self.cbNumDisplays.setEnabled(False)
-            self.resize(1200,800)
+            self.resize(1200,900)
             self.drawDone = True
 
         self.readtimer = QtCore.QTimer()
@@ -531,9 +562,31 @@ class DL3000GUI(QMainWindow):
     def eStop(self, graphnum):
         self.inst.setState("OFF")
 
-    def setBattery(self,x):
+    def setBattery(self,x):#triggered with drop down box selection
         self.sbVolts.setValue(float(eval(self.cbBattery.currentText())["VoltsCut"]))
         self.sbCurrent.setValue(float(eval(self.cbBattery.currentText())["CurrLoad"]))
+        
+    def setSourceFunction(self,x):#triggered with drop down box selection
+        self.inst.setState("OFF") #if user makes any changes to function, best to turn off the load
+        self.inst.setSourceFunc(self.cbSourceFunction.currentText())
+    
+        if (self.cbSourceFunction.currentText() == "CURRENT"):
+            self.inst.setCurrLevelImmediate("0.01")
+        
+        if (self.cbSourceFunction.currentText() == "RESISTANCE"):
+            self.inst.setResistanceLevelImmediate("1000")
+            
+        if (self.cbSourceFunction.currentText() == "VOLTAGE"):
+            self.inst.setVoltageLevelImmediate("22")
+        
+        if (self.cbSourceFunction.currentText() == "POWER"):
+            self.inst.setPowerLevelImmediate("0.01")
+
+   
+
+    def setSourceFunctionMode(self,x):#triggered with drop down box selection
+        self.inst.setSourceFuncMode(self.cbSourceFunctionMode.currentText())
+
 
     def setupChannel(self, graphnum):
         if(self.ckCurrent.isChecked()):
@@ -546,7 +599,7 @@ class DL3000GUI(QMainWindow):
         self.graphsettings[graphnum]["points"] = points
 
 
-    def logData(self):#,readings,graphnum):
+    def logData(self):
         path_to_log = "captures\\"
         file_format = "csv"
         try:
@@ -558,9 +611,11 @@ class DL3000GUI(QMainWindow):
             if(self.filename ==""):
                 self.startLogTime = time.time() 
                 
+                #print(self.leBattRef.text())
+                
                 # Prepare filename as C:\MODEL_SERIAL_YYYY-MM-DD_HH.MM.SS
                 timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
-                self.filename = path_to_log + self.inst.identify()["model"] + "_" +  self.inst.identify()["serial"] + "_" + timestamp
+                self.filename = path_to_log + self.inst.identify()["model"] + "_" +  self.inst.identify()["serial"] + "_"  +self.leBattRef.text() + "_" + timestamp
                 header = b"Timestamp,Volts,Curr,Power,Energy,Capacity,DischargeTime\n"
                 file = open(self.filename + "." + file_format, "ab")
                 file.write(header) 
