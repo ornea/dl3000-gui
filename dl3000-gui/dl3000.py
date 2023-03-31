@@ -43,7 +43,7 @@ class DL3000(object):
         """The input regulation mode setting is controlled by the FUNCtion command, the list value, the waveform display command, or the battery discharge command
             :[SOURce]:FUNCtion:MODE {FIXed|LIST|WAVe|BATTery}
             BATTery: indicates that the input regulation mode is determined by the battery discharge command"""
-        print("Setting to Current Mode")
+        print("Setting to Current Mode:%s"%mode)
         self.inst.write("SOUR:FUNC:MODE %s"%mode)
 
 
@@ -51,7 +51,7 @@ class DL3000(object):
         """The input regulation mode setting is controlled by the FUNCtion command, the list value, the waveform display command, or the battery discharge command
         :[SOURce]:FUNCtion:MODE {FIXed|LIST|WAVe|BATTery}
         BATTery: indicates that the input regulation mode is determined by the battery discharge command"""
-        print("Setting to Current Mode")
+        print("Setting to SOUR:FUNC:MODE BATT")
         self.inst.write("SOUR:FUNC:MODE BATT")
 
     def setSourceFunc(self,func="CURR"):

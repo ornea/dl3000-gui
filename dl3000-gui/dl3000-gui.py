@@ -199,7 +199,6 @@ class DL3000GUI(QMainWindow):
         #self.layoutcon2.addWidget(QLabel("Connect String:"))
         layout.addLayout(self.layoutcon2)
 
-
         self.graphlist = []
         self.graphsettings = []
         self.chLineEdits = []
@@ -265,7 +264,6 @@ class DL3000GUI(QMainWindow):
         self.pbPlotE.setObjectName("pbPlotE")
         self.pbPlotE.setCheckable(True)
         self.gridLayoutChannel.addWidget(self.pbPlotE, 1, 0, 1, 1)
-
  
         self.pbPlotP = QPushButton()
         self.pbPlotP.setObjectName("pbPlotP")
@@ -412,7 +410,6 @@ class DL3000GUI(QMainWindow):
             self.gridLayoutChannel.addWidget(self.chConfig[-1]["sbVolts"], 6, 3, 1, 1)        
             self.gridLayoutChannel.addWidget(self.chConfig[-1]["sbCurrent"], 4, 3, 1, 1)
 
-
         gb.setLayout(self.gridLayoutChannel)
         self.gridLayoutChannel.setColumnStretch(0, 1)
         self.gridLayoutChannel.setColumnStretch(1, 1)
@@ -425,7 +422,6 @@ class DL3000GUI(QMainWindow):
 
         self.graphlist.append(GraphWidget())
         self.gridLayoutChannel.addWidget(self.graphlist[-1], 0, 4,9,1)
-        
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -449,7 +445,6 @@ class DL3000GUI(QMainWindow):
         self.lblCapacity.setText(_translate("MainWindow", "Capacity [mAh]:"))
         self.lblDischargeTime.setText(_translate("MainWindow", "Dis Time [HMS]:"))
         
-        
         self.pbPlotV.setText(_translate("MainWindow", "Plot V"))
         self.pbPause.setText(_translate("MainWindow", "PAUSE PLOT"))
         self.pbClearPlot.setText(_translate("MainWindow", "CLEAR PLOT"))
@@ -457,7 +452,6 @@ class DL3000GUI(QMainWindow):
         self.lblVoltCut.setText(_translate("MainWindow", "Volt Cutoff [V]:"))
         self.ckCurrent.setText(_translate("MainWindow", "Current [I]:"))
         self.ckRun.setText(_translate("MainWindow", "Run"))
-        
 
     def clearPlot(self,graphnum):
         self.vdata[graphnum] = []
@@ -507,7 +501,6 @@ class DL3000GUI(QMainWindow):
         self.cbSourceFunctionMode.addItem("LIST")
         self.cbSourceFunctionMode.addItem("WAVE")
         self.cbSourceFunctionMode.activated.connect(lambda x: self.setSourceFunctionMode(x))
-
         
         self.layoutcon.addWidget(self.loggingPushButton)
         self.layoutcon.addWidget(self.sbReadingsInterval)
@@ -530,11 +523,7 @@ class DL3000GUI(QMainWindow):
         self.layoutcon2.addWidget(QLabel("Source Function Mode:"))
         self.layoutcon2.addWidget(self.cbSourceFunctionMode)
         
-        
-        
         #self.inst.setCurrRangeLow()
- 
- 
  
         if self.drawDone == False:
             #self.addGraphs(self.cbNumDisplays.value()) # <- it can not be done this way.  It results in all functions refering to CH3 only
@@ -582,13 +571,14 @@ class DL3000GUI(QMainWindow):
         if (self.cbSourceFunction.currentText() == "POWER"):
             self.inst.setPowerLevelImmediate("0.01")
 
-   
-
     def setSourceFunctionMode(self,x):#triggered with drop down box selection
         self.inst.setSourceFuncMode(self.cbSourceFunctionMode.currentText())
 
-
     def setupChannel(self, graphnum):
+        self.inst.setSourceFunc("CURR") # we need to set to curr first Update- this does not work. No way to programattically set Curr to low range in battery mode
+        self.inst.setCurrRangeLow()     #then we can set curr to low range 4A
+        self.inst.setSourceFuncMode(self.cbSourceFunctionMode.currentText()) #then set to batt mode phew
+        #self.inst.setSourceFuncBatt()
         if(self.ckCurrent.isChecked()):
             self.inst.setCurrImmediate( self.sbCurrent.value())  #pass the chan number not the chan str. i.e send 2 not CH2
 
@@ -597,7 +587,6 @@ class DL3000GUI(QMainWindow):
 
     def setPoints(self, graphnum, points):
         self.graphsettings[graphnum]["points"] = points
-
 
     def logData(self):
         path_to_log = "captures\\"
@@ -709,7 +698,6 @@ class DL3000GUI(QMainWindow):
 
                 if self.graphsettings[i]["eenabled"].isChecked():
                     g.passTrace(self.edata[i], pen='y', clear=clear)
-
 
 def makeApplication():
     # Create the Qt Application
