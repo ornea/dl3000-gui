@@ -47,3 +47,5 @@ Changes made to the original repo
 11. Added logo
 12. Auto set channel limits based on the model 
 13. Zero plot at start for better auto ranging 
+
+Note: Screenshot.png is a snapshot of a discharge test conducted on a 4 year old 7Ah Lead acid battery.
