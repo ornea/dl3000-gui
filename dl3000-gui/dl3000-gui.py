@@ -5,10 +5,10 @@
 #
 # Python 3.10.0
 # pip install pyside6
-# pip install PyQt5 
+# pip install PyQt5 <-  error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
 # pip install pyqtgraph
 # pip install pyvisa-py
-# pip install matplotlib
+# pip install matplotlib <- requires vc redistributable to be installed https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
 
 #"TCPIP0::192.168.1.60::INSTR"  <- If using TCPIP then point browser to your IP address and it will reveal the "VISA TCP/IP String"
 #"USB0::0x1AB1::0x0E11::DPXXXXXXXXXXX::INSTR"
@@ -25,11 +25,23 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
-from PySide6.QtCore import *
-from PySide6.QtGui import *
+from PySide6 import *
 
-from PyQt5.QtWidgets import * #QApplication, QWidget, QMainWindow, QPushButton, QMessageBox, QBoxLayout
-from PyQt5 import QtCore, QtGui
+from PySide6.QtCore import *
+
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import *
+from PySide6 import QtGui
+
+
+
+
+#from PySide6.QtGui import *
+
+
+
+#from PyQt5.QtWidgets import * #QApplication, QWidget, QMainWindow, QPushButton, QMessageBox, QBoxLayout
+#from PyQt5 import QtCore, QtGui
 
 try:
     import pyqtgraph as pg
